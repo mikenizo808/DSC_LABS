@@ -1,4 +1,4 @@
-## This is a configuration to be pushed from an author server, in order to deploy a new dsc pull server
+## This is a configuration to be pushed from an author server (i.e. your jump box), in order to deploy a new dsc pull server
 Configuration NewPullServer {
     param (
         
@@ -53,7 +53,7 @@ Configuration NewPullServer {
                 Name       = $Node.MachineName
                 DomainName = $Node.Domain
                 Credential = $Node.Credential
-                Server     = 'dc01.lab.local' #domain controller for join
+                Server     = 'dc03.lab.local' #domain controller for join
                 DependsOn  = '[DNSServerAddress]DnsServerAddress' #will make a reasonable effort to join domain, but will move on with dsc install, so be sure your domain join technique works, or do the join in a dedicated configuration first.
         }
 
@@ -91,7 +91,7 @@ Configuration NewPullServer {
             EndpointName            = "PSDSCComplianceServer"
             Port                    = 9080
             PhysicalPath            = "$env:SystemDrive\inetpub\wwwroot\PSDSCComplianceServer"
-            CertificateThumbPrint   = $Node.ComplianceCert    #optionally, make another cert for compliance server, or 'AllowUnencryptedTraffic'. 
+            CertificateThumbPrint   = $Node.ComplianceCert
             State                   = "Started"
             DependsOn               = ("[WindowsFeature]DSCServiceFeature","[xDSCWebService]PSDSCPullServer")
         }
@@ -103,20 +103,20 @@ Configuration NewPullServer {
 $ConfigData = @{             
     AllNodes = @(             
         @{             
-            Nodename = '10.205.1.154' #This should only be IP address if needed to reach.
+            Nodename = 'dscpull01' #This should only be IP address if needed to reach.
             MachineName = 'dscpull01' #The node will be renamed if needed; MachineName wins for final config over NodeName
             Role = "HTTPSPull"
             Domain = 'lab.local'
             PsDscAllowPlainTextPassword = $false  #the default is $false so this is not required.
             PSDscAllowDomainUser = $true
-            IPAddress = '10.205.1.154'
-            DefaultGateway = "10.205.1.1"
-            DNSIPAddress = '10.205.1.151','10.205.1.152'
-            Ethernet = "Ethernet0"
-            CertificateThumbPrint   = '9B4187ACEB649D3ADBDBA3E6DBE824574721966B'  #Thumbprint of PSDSCPullServerCert created in IIS.
-            Thumbprint              = 'TODO'  #Thumbprint of the dscpull01 node (i.e. bastion cert for initial build. Can also be from lab.local GPO-provided cert if domain joined).
-            CertificateFile         = 'C:\Certs\10.205.1.154.cer'  #path on authoring server to saved certificate for dscpull01 (i.e. bastion cert for initial build).
-            ComplianceCert          = '01137166BDBACBF427DA02D0704AB406E73C2906'  #compliance server cert created on cert01 server for dsc pull server compliance server.
+            IPAddress = '10.200.0.76'
+            DefaultGateway = "10.200.0.1"
+            DNSIPAddress = '10.200.0.73','8.8.8.8'
+            Ethernet = "Ethernet"
+            CertificateThumbPrint   = '515311F40CF872161DF6ECDC22AAAE3B2B941933'  #Thumbprint of PSDSCPullServerCert created in IIS.
+            Thumbprint              = '535D2ADE1E0881E48060C5B830C5F2E87BF958FC'  #Any thumbprint on the target node dscpull01 (i.e. bastion cert for initial build. Can also be from lab.local GPO-provided cert if domain joined).
+            CertificateFile         = 'C:\Certs\dscpull01.cer'  #path on authoring server/jump box to saved certificate for dscpull01 (i.e. bastion cert for initial build).
+            ComplianceCert          = 'D9C025CD6C433DC81E5513C52408C619D36B01C1'  #compliance server cert created on cert01 server for dsc pull server compliance server.
             Credential = (Get-Credential -UserName 'lab\administrator' -message 'Enter admin pwd for lab domain') # Used to join remote node to lab.local if needed.
         }
     )
@@ -125,14 +125,14 @@ $ConfigData = @{
 
 ## Session setup
 $error.clear();clear
-$guest = '10.205.1.154'  #IP Address or name of guest node to manage.
+$guest = 'dscpull01'  #IP Address or name of guest node to manage.
 $creds = Get-Credential "$guest\Administrator"
 $session = New-PSSession -ComputerName $guest -Credential $creds
 
 ## Confirm session is active
 $session
 
-## show both certs
+## Optional - show both certs
 Invoke-Command -Session $session -ScriptBlock {
     Get-ChildItem Cert:\LocalMachine\my | ?{$_.FriendlyName -eq 'PSDSCPullServerCert' `
     -or $_.FriendlyName -eq 'PSDSCComplianceServerCert'} | `
@@ -150,6 +150,8 @@ Write-Host "//pull cert"
 $PullCert
 
 ## Get the compliance server iis cert
+## This is a certificate we created earlier in our demos.
+## Using a cert (as we are) is preferred to using 'AllowUnencryptedTraffic'. 
 $ComplianceCert = Invoke-Command -Session $session -ScriptBlock {
     Get-ChildItem Cert:\LocalMachine\my | Where-Object { $_.FriendlyName -eq "PSDSCComplianceServerCert" }
 }
@@ -183,4 +185,4 @@ Get-DscLocalConfigurationManager -CimSession $cim -Verbose
 Get-DscLocalConfigurationManager -CimSession $cim | Select-Object -ExpandProperty ConfigurationDownloadManagers
 
 ##Optional - Review health of dsc web page (xml format, viewable in ie or similar)
-Start-Process -FilePath iexplore.exe https://10.205.1.154:8080/PSDSCPullServer.svc
+Start-Process -FilePath msedge.exe https://dscpull01.lab.local:8080/PSDSCPullServer.svc

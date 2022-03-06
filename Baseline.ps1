@@ -51,18 +51,21 @@ Configuration Baseline {
 $configdata = @{
     AllNodes = @(
      @{
-      NodeName = 's1'
-      Certificatefile = 'c:\certs\s1.cer'
+      NodeName = 's2'
+      Certificatefile = 'c:\certs\s2.cer'
       PSDscAllowDomainUser = $true
      }
     )
 }
 
+#name of node to manage with dsc
+$strComputerName = $configdata.AllNodes.NodeName
+
 #Export Certificate to local authoring machine
 $cert = Invoke-Command -scriptblock { 
     Get-ChildItem Cert:\LocalMachine\my | 
     Where-Object {$_.Issuer -eq 'CN=lab-CERT01-CA, DC=LAB, DC=LOCAL'}
-    } -ComputerName $configdata.AllNodes.nodename
+    } -ComputerName $strComputerName
 
 Export-Certificate -Cert $Cert -FilePath $env:systemdrive:\Certs\$($Cert.PSComputerName).cer -Force
 
@@ -70,22 +73,22 @@ Export-Certificate -Cert $Cert -FilePath $env:systemdrive:\Certs\$($Cert.PSCompu
 Baseline -ConfigurationData $ConfigData `
 -password (Get-Credential -UserName LocalAdmin -Message 'Enter Password') `
 -Credential (Get-Credential -UserName LAB\Administrator -Message 'Enter Password') `
--OutputPath c:\dsc\s1
+-OutputPath c:\dsc\s2
 
 #establish cim session to remote node and PS session to pull server
-$cim = New-CimSession -ComputerName s1
+$cim = New-CimSession -ComputerName s2
 $PullSession = New-PSSession -ComputerName dscpull01
 
 #stage pull config on pullserver
 $guid = Get-DscLocalConfigurationManager -CimSession $cim `
 | Select-Object -ExpandProperty ConfigurationID
 
-$source = "C:\DSC\s1\$($ConfigData.AllNodes.NodeName).mof"
+$source = "C:\DSC\s2\$($ConfigData.AllNodes.NodeName).mof"
 $dest = "$Env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
 
 Copy-Item -Path $source -Destination $dest -ToSession $PullSession -force -verbose
 
-Invoke-Command $PullSession -ScriptBlock {Param($ComputerName,$guid)Rename-Item $env:ProgramFiles\WindowsPowerShell\DscService\Configuration\$ComputerName.mof -NewName $env:ProgramFiles\WindowsPowerShell\DscService\Configuration\$guid.mof -Force} -ArgumentList $($ConfigData.AllNodes.NodeName),$guid
+Invoke-Command $PullSession -ScriptBlock {Param($strComputerName,$guid)Rename-Item $env:ProgramFiles\WindowsPowerShell\DscService\Configuration\$strComputerName.mof -NewName $env:ProgramFiles\WindowsPowerShell\DscService\Configuration\$guid.mof -Force} -ArgumentList $($strComputerName),$guid
 Invoke-Command $PullSession -ScriptBlock {Param($dest)New-DSCChecksum $dest -Force} -ArgumentList $dest
 
 #invoke pull (wait a moment or two and try again if errors)

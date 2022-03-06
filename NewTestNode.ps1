@@ -54,7 +54,7 @@ Configuration NewTestNode {
                 Name       = $Node.MachineName
                 DomainName = $Node.Domain
                 Credential = $Node.Credential
-                Server     = 'dc01.lab.local' #domain controller for join
+                Server     = 'dc03.lab.local' #domain controller for join
                 DependsOn  = '[DNSServerAddress]DnsServerAddress' #will make a reasonable effort to join domain, but will move on with dsc install, so be sure your domain join technique works.
         }
 
@@ -78,12 +78,12 @@ $ConfigData = @{
             Domain = 'lab.local'
             PsDscAllowPlainTextPassword = $false
             PSDscAllowDomainUser = $true
-            IPAddress = '10.205.1.156'
-            DefaultGateway = "10.205.1.1"
-            DNSIPAddress = '10.205.1.151','10.205.1.152'
-            Ethernet = "Ethernet0"
-            Thumbprint = 'D6E9A8CFEDCCA50F6040386107A28E66D0138387'  #Thumbprint of the remote node (i.e. bastion cert for initial build).
-            CertificateFile = 'C:\Certs\10.205.1.156.cer' #path to saved certificate for remote node, located on local client / authoring server. 
+            IPAddress = '10.200.0.80'
+            DefaultGateway = "10.200.0.1"
+            DNSIPAddress = '10.200.0.73','10.200.0.74','8.8.8.8','1.1.1.1'
+            Ethernet = "Ethernet"
+            Thumbprint = 'TODO'  #Thumbprint of the remote node (i.e. bastion cert for initial build).
+            CertificateFile = 'C:\Certs\TODO.cer' #path to saved certificate for remote node, located on local client / authoring server. 
             Credential = (Get-Credential -UserName 'lab\administrator' -message 'Enter admin pwd for lab domain') # the login that can join nodes to lab.local.
         }
     )
@@ -91,9 +91,9 @@ $ConfigData = @{
 
 ## Highlight and run the above to save your configuration data for use below.
 
-## Copy required resources to remote node, if needed
+## Use Copy-Item to copy required resources to remote node, if needed.
 ## For example, resources such as 'xTimeZone', 'ComputerManagementDsc', 'NetworkingDsc', etc.
-psedit "C:\DSC_LABS\docs\Demo 8 - How to use Copy-Item on PowerShell 5 to copy a module for use with DSC.ps1"
+psedit "C:\DSC_LABS\docs\Demo 4 - How to use Copy-Item on PowerShell 5 to copy a module for use with DSC.ps1"
 
 #Note: Once using the pull server, the resources can be obtained automatically instead of using Copy-Item or gallery installs for remote nodes.
 #We can start using the pull server later, once we join this bastion guest to the domain.
@@ -193,7 +193,7 @@ Configuration LCM_NewTestNodePULL
 
 ## Get the pull server certificate. Use Credential if needed, we assume your client is domain joined.
 $pullServer = 'dscpull01'
-$pullSession = New-PSSession -ComputerName $pullServer # use -Credential if needed
+$pullSession = New-PSSession -ComputerName $pullServer -Credential (Get-Credential LAB\Administrator)
 $pullCert = Invoke-Command -Session $pullSession -ScriptBlock {
     Get-ChildItem Cert:\LocalMachine\my | Where-Object {
       ($_.FriendlyName -eq 'PSDSCPullServerCert') `
@@ -217,7 +217,7 @@ $nodeCert = Invoke-Command -scriptblock {
 } -ComputerName $ComputerName
 
 ## Export remote node certificate to local authoring machine. We use -Force to replace any existing of the same name.
-Export-Certificate -Cert $Cert -FilePath $env:systemdrive:\Certs\$($nodeCert.PSComputerName).cer -Force
+Export-Certificate -Cert $nodeCert -FilePath $env:systemdrive:\Certs\$($nodeCert.PSComputerName).cer -Force
 
 ## Create a cim session to remote node (add Credential if needed)
 $cim = New-CimSession -ComputerName $ComputerName
@@ -257,21 +257,3 @@ psedit "C:\DSC_LABS\Baseline.ps1"
 
 ## Or, work deeper on a custom LCM configuration.
 psedit "C:\DSC_LABS\LCM_HTTPSPULL.ps1"
-
-#############
-## APPENDIX
-#############
-
-## How To wipe the virtual machines s1 and s2 (DeletePermanently).
-
-## Connect to vCenter Server
-$vc = 'entervcname'
-$credsVC = Get-Credential administrator@vsphere.local
-Connect-VIServer $vc -Credential $credsVC
-
-## Optional - Delete test nodes s1 and s2
-Get-VM 'S1','S2' | Shutdown-VMGuest -Confirm:$false
-Get-VM 'S1','S2' | Remove-VM -DeletePermanently:$true -Confirm:$false
-
-## Optional - Deploy s1 and s2 with New-LabVM
-psedit "C:\DSC_LABS\docs\Demo 3 - How to deploy DSC_LABS with New-LabVM.ps1"

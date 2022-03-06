@@ -2,7 +2,7 @@
 function Publish-DSCResourcePull {
     <#
         .SYNOPSIS
-            Copies specified DSC resource module to targert node, creates archive file and checksum for DSC resource.
+            Copies specified DSC resource module to target node, creates archive file and checksum for DSC resource.
 
         .DESCRIPTION
             Copies specified DSC resource module to the target node's $Env:ProgramFiles\WindowsPowerShell\Modules folder.
@@ -26,6 +26,7 @@ function Publish-DSCResourcePull {
         .NOTES
         Script: Publish-DSCResourcePull.ps1
         From:   Pluralsight "Practical Desired State Configuration (DSC)" training course supporting materials on github.
+        Changelog: Added "-ErrorAction Ignore" on Copy-Item since "ComputerManagementDsc" (for example) may already be there.  Even when a module exists, it still gets checksum calculated which is beneficial.
     
     #>
 [CmdletBinding()]
@@ -59,7 +60,7 @@ Param(
     
         Write-Verbose -Message "Copying $ModuleName to $ComputerName..."
 
-        Copy-Item -Path $From -Recurse -Destination $To -ToSession $session
+        Copy-Item -Path $From -Recurse -Destination $To -ToSession $session -ea 0
 
         Write-Verbose -Message "Creating $ModuleName archive..."
 

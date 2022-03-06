@@ -80,7 +80,7 @@ Configuration NewCertServer {
                 Name       = $Node.MachineName  #will rename computer if needed
                 DomainName = $Node.Domain
                 Credential = $Node.Credential
-                Server     = 'dc01.lab.local' #optional domain controller to use for join
+                Server     = 'dc03.lab.local' #optional domain controller to use for join
             }
         }
 
@@ -123,18 +123,18 @@ Configuration NewCertServer {
 $ConfigData = @{             
     AllNodes = @(             
         @{             
-            Nodename = '10.205.1.153'
+            Nodename = '10.200.0.205'
             MachineName = 'cert01'
             Domain = 'lab.local'
             Role = "PKI"
-            Thumbprint = 'DEE5888A1CC723D2533850A6A12815FA8E5BF062'
-            CertificateFile = 'C:\Certs\10.205.1.153.cer'
-            IPAddress = '10.205.1.153'
-            DefaultGateway = '10.205.1.1'
-            DNSIPAddress = '10.205.1.151','10.205.1.152'
-            Ethernet = 'Ethernet0'
+            Thumbprint = '88DD09B4974024A85FC2AF7E6A27431D8A375FE1'
+            CertificateFile = 'C:\Certs\cert01.cer'
+            IPAddress = '10.200.0.75'
+            DefaultGateway = '10.200.0.1'
+            DNSIPAddress = '10.200.0.73','10.200.0.74','8.8.8.8'
+            Ethernet = 'Ethernet'
             PSDscAllowDomainUser = $true
-            Credential = (Get-Credential -UserName 'LAB\Administrator' -message 'Enter admin pwd')
+            Credential = (Get-Credential -UserName 'LAB\Administrator' -message 'Enter login for lab.local domain')
         }
     )
 }
@@ -160,14 +160,22 @@ Set-DscLocalConfigurationManager -Path c:\dsc\$ComputerName -Verbose -Force -Cim
 ## start dsc configuration on remote node.
 Start-DscConfiguration -wait -force -Verbose -Path c:\dsc\$ComputerName -CimSession $cim
 
-## Optional - get dsc configuration on remote node.
+## optional - update credential variable to use lab.local and also machine name instead of "old" IP
+$ComputerName = $ConfigData.AllNodes.MachineName
+$cim = New-CimSession -ComputerName $ComputerName -Credential (Get-Credential LAB\Administrator)
+
+## show cim session
+$cim
+
+## Optionally, show config info.
+## Note: This responds even if busy. See the "LCMState" property
 Get-DscLocalConfigurationManager -CimSession $cim
 
-## Optional - get dsc configuration status on remote node.
+## Optional - show status (may return error if still busy)
 Get-DscConfigurationStatus -CimSession $cim
 
-## Optional - get dsc configuration (detailed)
-Get-DscConfiguration -CimSession $cim
+## clear errors
+$Error.Clear(); Clear-Host
 
 ## Next, we return to the Demo to discuss creating a cert.
 ## Close this tab now, or use the link below to return to the demo.

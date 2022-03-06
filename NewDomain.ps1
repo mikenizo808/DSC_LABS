@@ -84,15 +84,15 @@ Configuration NewDomain {
 $ConfigData = @{             
     AllNodes = @(             
         @{             
-            Nodename = '10.205.1.151'
+            Nodename = '10.200.0.115'
             Role = "FirstDomainController"
             DomainName = "lab.local"
-            IPAddress = '10.205.1.151'
-            DefaultGateway = '10.205.1.1'
+            IPAddress = '10.200.0.73'
+            DefaultGateway = '10.200.0.1'
             DNSIPAddress = '127.0.0.1'
-            Ethernet = 'Ethernet0'
-            Thumbprint = '7F4A0EAFB54EE9D290ABB0D99214F59C7E11A92C'
-            Certificatefile = "C:\Certs\10.205.1.151.cer"
+            Ethernet = 'Ethernet'
+            Thumbprint = '99B549203C3FB932578B6F1777BFDF65EDC5A908'
+            Certificatefile = "C:\Certs\dc03.cer"
             PSDscAllowPlainTextPassword = $false
             PSDscAllowDomainUser = $true
         } 
@@ -138,7 +138,7 @@ NewDomain -ConfigurationData $ConfigData `
 -OutputPath c:\dsc\NewDomain
 
 ## Create cim sessions
-$cim = New-CimSession -ComputerName 10.205.1.151 -Credential (Get-Credential 10.205.1.151\Administrator)
+$cim = New-CimSession -ComputerName 10.200.0.115 -Credential (Get-Credential 10.200.0.115\Administrator)
 
 ## Show cim session
 $cim

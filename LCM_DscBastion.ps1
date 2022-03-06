@@ -29,7 +29,7 @@ Configuration LCM_DscBastion
 #Run the above to add as a function.
 
 ## Always do this part. DSC will use CIM.
-$ComputerName = '10.205.1.151'
+$ComputerName = 'dscpull01'
 $creds = Get-Credential -UserName ('{0}\Administrator' -f $ComputerName) -Message 'Enter login password'
 $cim = New-CimSession -ComputerName $ComputerName -Credential $creds
 
@@ -80,6 +80,6 @@ Get-DscLocalConfigurationManager -CimSession $cim
 $ComputerName = '10.205.1.151'
 $creds = Get-Credential -UserName ('{0}\Administrator' -f $ComputerName) -Message 'Enter login password'
 Invoke-Command -ScriptBlock {
-     Get-ChildItem Cert:\LocalMachine\my | Remove-Item
+     Get-ChildItem Cert:\LocalMachine\my | Remove-Item -Confirm:$true
 } -ComputerName $ComputerName -Credential $creds
 

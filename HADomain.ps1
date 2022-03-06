@@ -115,8 +115,8 @@ Configuration HADomain {
 }
 
 ## Create sessions
-$session1 = New-PSSession -ComputerName '10.205.1.151' -Credential (Get-Credential LAB\Administrator)
-$session2 = New-PSSession -ComputerName '10.205.1.152' -Credential (Get-Credential 10.205.1.152\Administrator)
+$session1 = New-PSSession -ComputerName '10.200.0.73' -Credential (Get-Credential LAB\Administrator)
+$session2 = New-PSSession -ComputerName '10.200.0.204' -Credential (Get-Credential 10.200.0.204\Administrator)
 
 ## Get any valid local cert. You can get more specific by using FriendlyName or similar (not shown here).
 $cert1 = Invoke-Command -Session $session1 -ScriptBlock {
@@ -148,26 +148,26 @@ psedit "C:\DSC_LABS\SetLocalAdminPw.ps1"
 $ConfigData = @{             
     AllNodes = @(             
         @{             
-            Nodename = '10.205.1.151'          
+            Nodename = '10.200.0.73'         #ip to reach this node at initial config time
             Role = "FirstDomainController"
             DomainName = "lab.local"
-            DNSIPAddress  = '10.203.1.40'
-            Ethernet   = 'Ethernet0'                       
-            Thumbprint = 'E0507137A5288D39316CA8FFC933D44F5385E6C5'
-            Certificatefile = 'c:\certs\10.205.1.151.cer'
+            DNSIPAddress  = '8.8.8.8'
+            Ethernet   = 'Ethernet'                       
+            Thumbprint = '99B549203C3FB932578B6F1777BFDF65EDC5A908'
+            Certificatefile = 'c:\certs\dc03.cer'
             RetryCount = 20
             RetryIntervalSec = 30            
             PSDscAllowDomainUser = $true     
         }
 
         @{             
-            Nodename = '10.205.1.152'          
+            Nodename = '10.200.0.204'        #ip to reach this node at initial config time          
             Role = "SecondDomainController"
             DomainName = "lab.local"
-            DNSIPAddress  = '10.205.1.151'
-            Ethernet   = 'Ethernet0'                       
-            Thumbprint = '8A178267D608081EF55FD1D4AA4B73FE012EDB4D'
-            Certificatefile = 'c:\certs\10.205.1.152.cer'
+            DNSIPAddress  = @('10.200.0.73','8.8.8.8')
+            Ethernet   = 'Ethernet'                       
+            Thumbprint = '763D7BEC4934F10770C28E8E267DC7A329F2A1D6'
+            Certificatefile = 'c:\certs\dc04.cer'
             RetryCount = 20
             RetryIntervalSec = 30            
             PSDscAllowDomainUser = $true     
@@ -182,25 +182,21 @@ HADomain -ConfigurationData $ConfigData `
 -DomainAdministratorCredential (Get-Credential -UserName lab\administrator `
 -Message "New Domain Admin Credential") -OutputPath c:\dsc\HADomain
 
+#Note: The above outputs result in some output files like "IP Address.mof" and "IP Address.meta.mof".
+
 ## Create cim sessions
-$cim1 = New-CimSession -ComputerName 10.205.1.151 -Credential (Get-Credential LAB\Administrator)
-$cim2 = New-CimSession -ComputerName 10.205.1.152 -Credential (Get-Credential 10.205.1.152\Administrator) 
+$cim1 = New-CimSession -ComputerName 10.200.0.73 -Credential (Get-Credential LAB\Administrator)
+$cim2 = New-CimSession -ComputerName 10.200.0.204 -Credential (Get-Credential 10.200.0.204\Administrator) 
 
 ## Show sessions
 $cim1
 $cim2
 
-## set on local node
+## Set LCM
 Set-DscLocalConfigurationManager -CimSession $cim1, $cim2 -Path c:\dsc\HADomain -Verbose -Force
 
-## start on local node
-Start-DscConfiguration -CimSession $cim1, $cim2 -wait -force -Verbose -Path c:\dsc\HADomain
-
-## set on remote node
-Set-DscLocalConfigurationManager -CimSession $cim1, $cim2 -Path c:\dsc\HADomain -Verbose -Force 
-
-## start on remote node
-Start-DscConfiguration -CimSession $cim1, $cim2 -wait -force -Verbose -Path c:\dsc\HADomain
+## Start DSC Configuration
+Start-DscConfiguration -CimSession $cim2 -wait -force -Verbose -Path c:\dsc\HADomain
 
 ## Optional
 Get-DscLocalConfigurationManager -CimSession $cim1, $cim2

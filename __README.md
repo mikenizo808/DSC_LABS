@@ -13,7 +13,7 @@ Introducing DSC_LABS. This is a demo based run-through on deploying and managing
 * Learn to use the pull server to securely configure and manage all nodes.
 
 ## Requirements
-Requires Microsoft ISE and VScode.
+Requires Microsoft ISE and/or VS Code.
 
 ## Credits
 DSC_LABS uses some helper functions and techniques from https://github.com/Duffney/IAC-DSC

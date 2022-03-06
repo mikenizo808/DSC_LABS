@@ -1,4 +1,4 @@
-# DSC_LABS
+# About DSC_LABS
 
 ## About DSC_LABS
 Introducing DSC_LABS. This is a demo based run-through on deploying and managing Desired State Configuration (DSC).

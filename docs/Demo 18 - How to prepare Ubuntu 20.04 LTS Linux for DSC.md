@@ -400,28 +400,28 @@ Perform the following to set the password for `root` so that login can be used w
 ## Remotely Apply DSC Configuration
 Here we use a Windows jump server or authoring machine to remotely apply a `dsc` configuration on a Linux node.
 
-*Important - DSC requires `root` login, so perform the section above if you missed it.*
+*Important: `DSC` requires `root` login, so perform the section above if you missed it.*
 
-#root login required
-$GuestCredential = Get-Credential root
+    #root login required
+    $GuestCredential = Get-Credential root
 
-#check credential is root
-If($GuestCredential.UserName -notmatch '^root'){throw "DSC Requires root!"}
+    #check credential is root
+    If($GuestCredential.UserName -notmatch '^root'){throw "DSC Requires root!"}
 
-#Name of linux guest
-$linuxVM = 'linux01.lab.local'
+    #Name of linux guest
+    $linuxVM = 'linux01.lab.local'
 
-#cim options
-$Opt = New-CimSessionOption -UseSsl -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+    #cim options
+    $Opt = New-CimSessionOption -UseSsl -SkipCACheck -SkipCNCheck -SkipRevocationCheck
 
-#create cim session
-$Session = New-CimSession -Credential $GuestCredential -ComputerName $linuxVM -Port 5986 -Authentication basic -SessionOption $Opt
+    #create cim session
+    $Session = New-CimSession -Credential $GuestCredential -ComputerName $linuxVM -Port 5986 -Authentication basic -SessionOption $Opt
 
-#optional - get dsc configuration
-Get-DscLocalConfigurationManager -CimSession $Session
+    #optional - get dsc configuration
+    Get-DscLocalConfigurationManager -CimSession $Session
 
-#set dsc configuration (this sets the LCM on the remote Linux node)
-Set-DscLocalConfigurationManager -CimSession $Session –Path ./SomeDscConfig
+    #set dsc configuration (this sets the LCM on the remote Linux node)
+    Set-DscLocalConfigurationManager -CimSession $Session –Path ./SomeDscConfig
 
 ## Running Other `Dsc` Commands
 On the Linux node, you can use `powershell` (if desired) or use the included `python` scripts.
@@ -444,6 +444,8 @@ Show the last few entries in the dsc log.
 
 ## Summary
 In this write-up we prepared a remote Linux node running `Ubuntu 20.04` and got it ready for `DSC`. We reviewed some secure and non-secure techniques to interact with the remote Linux node via WinRM (with `http` and `https`). Now you can configure the LCM or start adding some `DSC` resources (not shown).
+
+____
 
 #############################
 ## MORE EXAMPLES AND OUTPUTS
@@ -527,8 +529,6 @@ By installing `omi`, a certificate is generated automcatically for you.  By defa
     keyfile=/etc/opt/omi/ssl/omikey.pem
 
 
-## Summary
-In this Demo, we learned how to prepare `Ubuntu 20.04` for `dsc`.
 
 ## Next
 In the next Demo, we review some additional outputs from an `Ubuntu 20.04` guest running the setup described thus far.

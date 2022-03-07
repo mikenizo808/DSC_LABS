@@ -12,7 +12,12 @@ Introducing DSC_LABS. This is a demo based run-through on deploying and managing
 * Learn to use the pull server to securely configure and manage all nodes.
 
 ## Requirements
-Requires Microsoft ISE and/or VS Code.
+Requires Microsoft ISE and/or VS Code
+Requires hardware to run one or more virtual machines
+
+## Virtualization Type
+- `kvm`    - For this fork we are using `kvm` which is available for free on `ubuntu`.
+- `VMware` - For a fully automated deploy of dsc labs using VMware technologies, see the original repo at [https://github.com/vmkdaily/DSC_LABS/tree/master/vmw](https://github.com/vmkdaily/DSC_LABS/tree/master/vmw). 
 
 ## Credits
 DSC_LABS uses some helper functions and techniques from https://github.com/Duffney/#

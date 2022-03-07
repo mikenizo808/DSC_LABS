@@ -84,7 +84,7 @@ As we can see from above, we will not have the `gss-ntlmssp` by default. We can 
 *Note: For more detail about `gss` see http://manpages.ubuntu.com/manpages/focal/man3/gssapi.3.html*
 
 ## Optional - Confirm `gss` Setup
-Again, using `gss` is optional but if installed as outlined above using `apt`), then `Ubuntu 20.04` automatically places the file in the desired location.  We can confirm by listing with `ls`.
+Again, using `gss` is optional but if installed as outlined above using `apt`, then `Ubuntu 20.04` automatically places the file in the desired location.  We can confirm by listing with `ls`.
 
     ls /etc/gss/mech.d/mech.ntlmssp.conf
 

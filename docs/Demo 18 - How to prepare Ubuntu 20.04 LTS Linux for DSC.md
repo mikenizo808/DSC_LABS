@@ -176,7 +176,7 @@ The `nx` module can be installed on any `Windows` or `Linux` device and allows y
 
 
 ## OMI - Client vs Server
-To manage a Linux node with `dsc`, it must have the omi "server" component running.  Note that there is also a "client" (`omicli`) included with the `omi` package which we so use from time to time, but the important bit is configuring the omi "server" on each Linux node.
+To manage a Linux node with `dsc`, it must have the omi "server" component running.  Note that there is also a "client" (`omicli`) included with the `omi` package (which we use from time to time), but the important bit is configuring the omi "server" on each Linux node.
 
 ## Optional - Configure OMI "Client"
 The defaults for `omicli.conf` are fine, though you can review them.

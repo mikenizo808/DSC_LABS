@@ -12,8 +12,8 @@ Introducing DSC_LABS. This is a demo based run-through on deploying and managing
 * Learn to use the pull server to securely configure and manage all nodes.
 
 ## Requirements
-Requires Microsoft ISE and/or VS Code
-Requires hardware to run one or more virtual machines
+- Requires Microsoft ISE and/or VS Code
+- Requires hardware to run one or more virtual machines
 
 ## Virtualization Type
 - `kvm`    - For this fork we are using `kvm` which is available for free on `ubuntu`.

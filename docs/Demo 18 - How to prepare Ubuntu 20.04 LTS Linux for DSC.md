@@ -77,14 +77,14 @@ If you read the article above, you will be familiar with these two package names
     libgssapi-krb5-2/focal-updates,focal-security,now 1.17-6ubuntu4.1 amd64 [installed,automatic]
 
 ## Optional - Add support for `gss` API
-As we can see from above, we will not have the `gss-ntlmssp` by deafult. We can install this to add "API" support for `gss`.
+As we can see from above, we will not have the `gss-ntlmssp` by default. We can install this to add "API" support for `gss`.
 
     sudo apt install gss-ntlmssp
 
 *Note: For more detail about `gss` see http://manpages.ubuntu.com/manpages/focal/man3/gssapi.3.html*
 
 ## Optional - Confirm `gss` Setup
-Again, using `gss` is optional but if installed as outlined above using `apt`), then `Ubuntu 20.04` file in the desired location.  We can confirm by listing with `ls`.
+Again, using `gss` is optional but if installed as outlined above using `apt`), then `Ubuntu 20.04` automatically places the file in the desired location.  We can confirm by listing with `ls`.
 
     ls /etc/gss/mech.d/mech.ntlmssp.conf
 
